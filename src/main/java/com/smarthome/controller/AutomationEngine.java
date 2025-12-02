@@ -18,6 +18,10 @@ public class AutomationEngine {
     public void addRule(Rule rule) {
         rules.add(rule);
     }
+    
+    public void removeRule(Rule rule) {
+        rules.remove(rule);
+    }
 
     public List<Rule> getRules() {
         return new ArrayList<>(rules);

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Home Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: Inter, system-ui, sans-serif; margin:0; background:#0f172a; color:#e2e8f0; }
+    header { padding:20px; border-bottom:1px solid #1f2937; display:flex; align-items:center; justify-content:space-between; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px; padding:20px; }
+    .card { background:#111827; border:1px solid #1f2937; border-radius:12px; padding:16px; }
+    .title { font-weight:700; font-size:20px; }
+    .subtitle { color:#94a3b8; }
+    .row { display:flex; align-items:center; justify-content:space-between; margin:8px 0; }
+    button { background:#2563eb; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; }
+    button.secondary { background:#374151; }
+    .controls { display:flex; gap:8px; flex-wrap:wrap; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border-bottom:1px solid #1f2937; padding:8px; text-align:left; }
+    th { color:#cbd5e1; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="title">Smart Home Dashboard</div>
+      <div class="subtitle" id="summary">Loading...</div>
+    </div>
+    <div class="controls">
+      <button onclick="scene('morning')">Morning</button>
+      <button onclick="scene('movie')">Movie</button>
+      <button onclick="scene('night')">Night</button>
+      <button onclick="scene('away')">Away</button>
+      <button class="secondary" onclick="refresh()">Refresh</button>
+    </div>
+  </header>
+
+  <div class="grid" id="rooms"></div>
+
+  <script>
+    async function fetchJSON(url) { const r = await fetch(url); return r.json(); }
+    async function refresh(){
+      const status = await fetchJSON('/api/home/status');
+      document.getElementById('summary').innerText = `${status.name} — Rooms: ${status.rooms} | Devices: ${status.devices} | Active: ${status.activeDevices} | Power: ${status.powerWatts.toFixed(1)}W | Cost: $${status.hourlyCost.toFixed(2)}/h | Security: ${status.securityArmed?'ARMED':'DISARMED'}`;
+      const rooms = await fetchJSON('/api/rooms');
+      const devices = await fetchJSON('/api/devices');
+      const byRoom = {};
+      rooms.forEach(r => byRoom[r.name] = []);
+      devices.forEach(d => byRoom[d.location]?.push(d));
+      const container = document.getElementById('rooms');
+      container.innerHTML = '';
+      rooms.forEach(r => {
+        const card = document.createElement('div'); card.className = 'card';
+        const totalPower = byRoom[r.name].reduce((acc,d)=>acc + d.currentPowerConsumption, 0);
+        card.innerHTML = `<div class='title'>${r.name}</div><div class='subtitle'>${r.floor} — Devices: ${byRoom[r.name].length} — Power: ${totalPower.toFixed(1)}W</div>`;
+        const table = document.createElement('table');
+        table.innerHTML = `<thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Power</th><th>Actions</th></tr></thead>`;
+        const tbody = document.createElement('tbody');
+        byRoom[r.name].forEach(d => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${d.name}</td><td>${d.type}</td><td>${d.status}</td><td>${d.currentPowerConsumption.toFixed(1)}W</td>`;
+          const tdActions = document.createElement('td');
+          tdActions.className = 'controls';
+          const onBtn = document.createElement('button'); onBtn.textContent='ON'; onBtn.onclick=()=>control(d.name,'on');
+          const offBtn = document.createElement('button'); offBtn.textContent='OFF'; offBtn.onclick=()=>control(d.name,'off');
+          const togBtn = document.createElement('button'); togBtn.textContent='TOGGLE'; togBtn.onclick=()=>control(d.name,'toggle');
+          tdActions.append(onBtn, offBtn, togBtn);
+          tr.appendChild(tdActions);
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        card.appendChild(table);
+        container.appendChild(card);
+      });
+    }
+    async function control(name, action){ await fetch(`/api/devices/${encodeURIComponent(name)}/${action}`, { method:'POST' }); refresh(); }
+    async function scene(name){ await fetch(`/api/scene/${name}`, { method:'POST' }); refresh(); }
+    refresh();
+  </script>
+</body>
+</html>

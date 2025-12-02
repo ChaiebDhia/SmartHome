@@ -1,0 +1,182 @@
+/* Professional Smart Home Dashboard Styles */
+
+.root {
+    -fx-background-color: #0f172a;
+    -fx-font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Card Styles */
+.card {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 12;
+    -fx-border-color: #334155;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 4);
+}
+
+.card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(66, 153, 225, 0.4), 15, 0, 0, 6);
+    -fx-border-color: #3b82f6;
+}
+
+/* Button Styles */
+.primary-button {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: #2563eb;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.success-button {
+    -fx-background-color: #10b981;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 10 20;
+}
+
+.warning-button {
+    -fx-background-color: #f59e0b;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 10 20;
+}
+
+.danger-button {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 10 20;
+}
+
+/* Table Styles */
+.table-view {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #334155;
+    -fx-border-radius: 8;
+}
+
+.table-view .column-header {
+    -fx-background-color: #334155;
+    -fx-text-fill: #f1f5f9;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #e2e8f0;
+    -fx-border-color: #334155;
+}
+
+.table-view .table-row-cell:even {
+    -fx-background-color: #1e293b;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: #1a2438;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+}
+
+/* Chart Styles */
+.chart {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e2e8f0;
+}
+
+.chart-title {
+    -fx-text-fill: #f1f5f9;
+    -fx-font-weight: bold;
+}
+
+.axis {
+    -fx-tick-label-fill: #94a3b8;
+}
+
+.axis-label {
+    -fx-text-fill: #cbd5e1;
+}
+
+/* Tab Pane Styles */
+.tab-pane {
+    -fx-background-color: transparent;
+}
+
+.tab {
+    -fx-background-color: #1e293b;
+    -fx-background-radius: 8 8 0 0;
+    -fx-border-color: #334155;
+}
+
+.tab:selected {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+}
+
+.tab-label {
+    -fx-text-fill: #cbd5e1;
+    -fx-font-weight: bold;
+}
+
+.tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
+/* Text Styles */
+.title {
+    -fx-text-fill: #f1f5f9;
+    -fx-font-size: 24;
+    -fx-font-weight: bold;
+}
+
+.subtitle {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 14;
+}
+
+.stat-value {
+    -fx-text-fill: #f1f5f9;
+    -fx-font-size: 28;
+    -fx-font-weight: bold;
+}
+
+.stat-label {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 12;
+}
+
+/* Animation Classes */
+.pulse {
+    -fx-effect: dropshadow(gaussian, #3b82f6, 10, 0.5, 0, 0);
+}
+
+.glow {
+    -fx-effect: dropshadow(gaussian, #10b981, 15, 0.7, 0, 0);
+}
+
+/* Status Indicators */
+.status-online {
+    -fx-fill: #10b981;
+}
+
+.status-offline {
+    -fx-fill: #ef4444;
+}
+
+.status-warning {
+    -fx-fill: #f59e0b;
+}
