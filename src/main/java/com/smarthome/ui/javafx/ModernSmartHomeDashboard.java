@@ -223,11 +223,8 @@ public class ModernSmartHomeDashboard extends Application {
     
     private void createUI(Stage stage) {
         root = new BorderPane();
-        // IoT-themed background with subtle gradient
-        root.setStyle("-fx-background-color: linear-gradient(to bottom, #f0f4f8, #e5e7eb);");
-        
-        // Add animated particle background
-        addParticleBackground(root);
+        // Clean professional background
+        root.setStyle("-fx-background-color: #f8fafc;");
         
         // Top Header
         root.setTop(createHeader());
@@ -561,22 +558,329 @@ public class ModernSmartHomeDashboard extends Application {
     }
     
     private VBox createDashboardContent() {
-        VBox content = new VBox(20);
-        content.setPadding(new Insets(20));
-        content.setStyle("-fx-background-color: " + BACKGROUND + ";");
+        VBox content = new VBox(25);
+        content.setPadding(new Insets(30));
+        content.setStyle("-fx-background-color: #f8fafc;");
         
-        // Quick Actions Panel
-        content.getChildren().add(createQuickActionsPanel());
+        // Dashboard Title
+        Label dashTitle = new Label("Dashboard Overview");
+        dashTitle.setFont(Font.font("System", FontWeight.BOLD, 24));
+        dashTitle.setStyle("-fx-text-fill: #1e293b;");
+        content.getChildren().add(dashTitle);
         
-        // Room Cards Grid
-        content.getChildren().add(createRoomCardsGrid());
+        // Row 1: Statistics Cards (4 cards in a row)
+        HBox statsRow = new HBox(20);
+        statsRow.getChildren().addAll(
+            createStatCard("Total Power", totalPower.asString("%.0f W"), "⚡", "#3b82f6"),
+            createStatCard("Hourly Cost", hourlyCost.asString("$%.2f"), "💰", "#10b981"),
+            createStatCard("Active Devices", activeDevices.asString().concat("/").concat(totalDevices.asString()), "🔌", "#f59e0b"),
+            createSecurityCard()
+        );
+        content.getChildren().add(statsRow);
         
-        // Charts Section
-        HBox charts = new HBox(15);
-        charts.getChildren().addAll(createPowerChart(), createEnergyPieChart());
-        content.getChildren().add(charts);
+        // Row 2: Control Panel (Scenes + Quick Controls)
+        HBox controlRow = new HBox(20);
+        controlRow.setPrefHeight(200);
+        controlRow.getChildren().addAll(
+            createScenesPanel(),
+            createQuickControlsPanel()
+        );
+        content.getChildren().add(controlRow);
+        
+        // Row 3: Charts Section (2 charts side by side)
+        HBox chartsRow = new HBox(20);
+        chartsRow.setPrefHeight(350);
+        VBox powerChartBox = createPowerChart();
+        VBox energyChartBox = createEnergyPieChart();
+        HBox.setHgrow(powerChartBox, Priority.ALWAYS);
+        HBox.setHgrow(energyChartBox, Priority.ALWAYS);
+        chartsRow.getChildren().addAll(powerChartBox, energyChartBox);
+        content.getChildren().add(chartsRow);
         
         return content;
+    }
+    
+    private VBox createScenesPanel() {
+        VBox panel = new VBox(15);
+        panel.setPadding(new Insets(25));
+        panel.setPrefWidth(450);
+        HBox.setHgrow(panel, Priority.SOMETIMES);
+        panel.setStyle(
+            "-fx-background-color: white; " +
+            "-fx-background-radius: 12; " +
+            "-fx-border-color: #e2e8f0; " +
+            "-fx-border-width: 1; " +
+            "-fx-border-radius: 12; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);"
+        );
+        
+        Label title = new Label("Scene Control");
+        title.setFont(Font.font("System", FontWeight.BOLD, 16));
+        title.setStyle("-fx-text-fill: #1e293b;");
+        
+        GridPane scenesGrid = new GridPane();
+        scenesGrid.setHgap(10);
+        scenesGrid.setVgap(10);
+        
+        Button morningBtn = createSceneButtonCompact("🌅 Morning", "morning", "#10b981");
+        Button movieBtn = createSceneButtonCompact("🎬 Movie", "movie", "#3b82f6");
+        Button nightBtn = createSceneButtonCompact("🌙 Night", "night", "#6366f1");
+        Button awayBtn = createSceneButtonCompact("🚗 Away", "away", "#f59e0b");
+        
+        scenesGrid.add(morningBtn, 0, 0);
+        scenesGrid.add(movieBtn, 1, 0);
+        scenesGrid.add(nightBtn, 0, 1);
+        scenesGrid.add(awayBtn, 1, 1);
+        
+        panel.getChildren().addAll(title, scenesGrid);
+        return panel;
+    }
+    
+    private Button createSceneButtonCompact(String text, String sceneName, String color) {
+        Button btn = new Button(text);
+        btn.setPrefWidth(190);
+        btn.setPrefHeight(60);
+        btn.setStyle(
+            "-fx-background-color: " + color + "; " +
+            "-fx-text-fill: white; " +
+            "-fx-font-size: 14px; " +
+            "-fx-font-weight: bold; " +
+            "-fx-background-radius: 8; " +
+            "-fx-cursor: hand;"
+        );
+        
+        btn.setOnMouseEntered(e -> {
+            btn.setStyle(
+                "-fx-background-color: derive(" + color + ", -10%); " +
+                "-fx-text-fill: white; " +
+                "-fx-font-size: 14px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-background-radius: 8; " +
+                "-fx-cursor: hand;"
+            );
+        });
+        
+        btn.setOnMouseExited(e -> {
+            btn.setStyle(
+                "-fx-background-color: " + color + "; " +
+                "-fx-text-fill: white; " +
+                "-fx-font-size: 14px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-background-radius: 8; " +
+                "-fx-cursor: hand;"
+            );
+        });
+        
+        btn.setOnAction(e -> {
+            sceneManager.apply(sceneName);
+            refreshAllData();
+            showEnhancedAlert("Scene Applied", "Scene '" + text + "' has been activated!", Alert.AlertType.INFORMATION);
+        });
+        
+        return btn;
+    }
+    
+    private VBox createQuickControlsPanel() {
+        VBox panel = new VBox(15);
+        panel.setPadding(new Insets(25));
+        HBox.setHgrow(panel, Priority.ALWAYS);
+        panel.setStyle(
+            "-fx-background-color: white; " +
+            "-fx-background-radius: 12; " +
+            "-fx-border-color: #e2e8f0; " +
+            "-fx-border-width: 1; " +
+            "-fx-border-radius: 12; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);"
+        );
+        
+        Label title = new Label("Quick Controls");
+        title.setFont(Font.font("System", FontWeight.BOLD, 16));
+        title.setStyle("-fx-text-fill: #1e293b;");
+        
+        VBox controls = new VBox(10);
+        controls.getChildren().addAll(
+            createToggleControlRow("💡 All Lights", true),
+            createToggleControlRow("🔌 All Devices", false),
+            createSecurityControlRow()
+        );
+        
+        panel.getChildren().addAll(title, controls);
+        return panel;
+    }
+    
+    private HBox createToggleControlRow(String label, boolean isLights) {
+        HBox row = new HBox(15);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPadding(new Insets(10));
+        row.setStyle(
+            "-fx-background-color: #f8fafc; " +
+            "-fx-background-radius: 8;"
+        );
+        
+        Label labelText = new Label(label);
+        labelText.setFont(Font.font("System", FontWeight.NORMAL, 14));
+        labelText.setStyle("-fx-text-fill: #1e293b;");
+        HBox.setHgrow(labelText, Priority.ALWAYS);
+        
+        Button toggleBtn = new Button("Turn ON");
+        toggleBtn.setPrefWidth(120);
+        toggleBtn.setPrefHeight(35);
+        toggleBtn.setStyle(
+            "-fx-background-color: #10b981; " +
+            "-fx-text-fill: white; " +
+            "-fx-font-size: 12px; " +
+            "-fx-font-weight: bold; " +
+            "-fx-background-radius: 6; " +
+            "-fx-cursor: hand;"
+        );
+        
+        final boolean[] isOn = {false};
+        
+        toggleBtn.setOnAction(e -> {
+            isOn[0] = !isOn[0];
+            
+            if (isLights) {
+                if (isOn[0]) {
+                    // Turn ON all lights
+                    for (Room room : home.getRooms()) {
+                        for (SmartDevice device : room.getDevices()) {
+                            if (device instanceof com.smarthome.model.devices.SmartLight) {
+                                device.turnOn();
+                            }
+                        }
+                    }
+                    home.turnOnAllLights();
+                    toggleBtn.setText("Turn OFF");
+                    toggleBtn.setStyle(
+                        "-fx-background-color: #ef4444; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 12px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-background-radius: 6; " +
+                        "-fx-cursor: hand;"
+                    );
+                } else {
+                    // Turn OFF all lights
+                    for (Room room : home.getRooms()) {
+                        for (SmartDevice device : room.getDevices()) {
+                            if (device instanceof com.smarthome.model.devices.SmartLight) {
+                                device.turnOff();
+                            }
+                        }
+                    }
+                    toggleBtn.setText("Turn ON");
+                    toggleBtn.setStyle(
+                        "-fx-background-color: #10b981; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 12px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-background-radius: 6; " +
+                        "-fx-cursor: hand;"
+                    );
+                }
+            } else {
+                if (isOn[0]) {
+                    // Turn ON all devices
+                    for (SmartDevice device : home.getAllDevices()) {
+                        if (!device.isOn()) {
+                            device.turnOn();
+                        }
+                    }
+                    toggleBtn.setText("Turn OFF");
+                    toggleBtn.setStyle(
+                        "-fx-background-color: #ef4444; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 12px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-background-radius: 6; " +
+                        "-fx-cursor: hand;"
+                    );
+                } else {
+                    // Turn OFF all devices
+                    home.turnOffAllDevices();
+                    toggleBtn.setText("Turn ON");
+                    toggleBtn.setStyle(
+                        "-fx-background-color: #10b981; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 12px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-background-radius: 6; " +
+                        "-fx-cursor: hand;"
+                    );
+                }
+            }
+            
+            refreshAllData();
+        });
+        
+        row.getChildren().addAll(labelText, toggleBtn);
+        return row;
+    }
+    
+    private HBox createSecurityControlRow() {
+        HBox row = new HBox(15);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPadding(new Insets(10));
+        row.setStyle(
+            "-fx-background-color: #f8fafc; " +
+            "-fx-background-radius: 8;"
+        );
+        
+        Label labelText = new Label("🛡️ Security System");
+        labelText.setFont(Font.font("System", FontWeight.NORMAL, 14));
+        labelText.setStyle("-fx-text-fill: #1e293b;");
+        HBox.setHgrow(labelText, Priority.ALWAYS);
+        
+        Button toggleBtn = new Button("Arm");
+        toggleBtn.setPrefWidth(120);
+        toggleBtn.setPrefHeight(35);
+        toggleBtn.setStyle(
+            "-fx-background-color: #f59e0b; " +
+            "-fx-text-fill: white; " +
+            "-fx-font-size: 12px; " +
+            "-fx-font-weight: bold; " +
+            "-fx-background-radius: 6; " +
+            "-fx-cursor: hand;"
+        );
+        
+        final boolean[] armed = {false};
+        
+        toggleBtn.setOnAction(e -> {
+            armed[0] = !armed[0];
+            
+            if (armed[0]) {
+                securityService.arm();
+                securityArmed.set(true);
+                startAlarmAnimation(DANGER);
+                toggleBtn.setText("Disarm");
+                toggleBtn.setStyle(
+                    "-fx-background-color: #10b981; " +
+                    "-fx-text-fill: white; " +
+                    "-fx-font-size: 12px; " +
+                    "-fx-font-weight: bold; " +
+                    "-fx-background-radius: 6; " +
+                    "-fx-cursor: hand;"
+                );
+            } else {
+                securityService.disarm();
+                securityArmed.set(false);
+                stopAlarmAnimation();
+                toggleBtn.setText("Arm");
+                toggleBtn.setStyle(
+                    "-fx-background-color: #f59e0b; " +
+                    "-fx-text-fill: white; " +
+                    "-fx-font-size: 12px; " +
+                    "-fx-font-weight: bold; " +
+                    "-fx-background-radius: 6; " +
+                    "-fx-cursor: hand;"
+                );
+            }
+            
+            refreshAllData();
+        });
+        
+        row.getChildren().addAll(labelText, toggleBtn);
+        return row;
     }
     
     private VBox createQuickActionsPanel() {
@@ -2594,58 +2898,6 @@ public class ModernSmartHomeDashboard extends Application {
         }
         
         System.out.println("✅ ALARM ANIMATION STOPPED - Security Disarmed");
-    }
-    
-    private void addParticleBackground(BorderPane container) {
-        // Create a Pane for particles
-        Pane particlePane = new Pane();
-        particlePane.setMouseTransparent(true);
-        particlePane.setStyle("-fx-background-color: transparent;");
-        
-        // Create 30 floating particles
-        for (int i = 0; i < 30; i++) {
-            Circle particle = new Circle(Math.random() * 4 + 2); // 2-6px radius
-            particle.setFill(Color.web("#3b82f6", 0.15 + Math.random() * 0.15)); // Blue with varying opacity
-            particle.setCenterX(Math.random() * 1400);
-            particle.setCenterY(Math.random() * 900);
-            
-            particlePane.getChildren().add(particle);
-            
-            // Animate particles floating
-            double duration = 15000 + Math.random() * 10000; // 15-25 seconds
-            double targetY = particle.getCenterY() - 200 - Math.random() * 300;
-            double targetX = particle.getCenterX() + (Math.random() - 0.5) * 200;
-            
-            Timeline floatAnimation = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                    new KeyValue(particle.centerYProperty(), particle.getCenterY()),
-                    new KeyValue(particle.centerXProperty(), particle.getCenterX()),
-                    new KeyValue(particle.opacityProperty(), 0.3 + Math.random() * 0.3)
-                ),
-                new KeyFrame(Duration.millis(duration / 2),
-                    new KeyValue(particle.centerYProperty(), targetY),
-                    new KeyValue(particle.centerXProperty(), targetX),
-                    new KeyValue(particle.opacityProperty(), 0.1)
-                ),
-                new KeyFrame(Duration.millis(duration),
-                    new KeyValue(particle.centerYProperty(), 900 + particle.getRadius()),
-                    new KeyValue(particle.opacityProperty(), 0)
-                )
-            );
-            
-            floatAnimation.setOnFinished(e -> {
-                // Reset particle position and restart
-                particle.setCenterX(Math.random() * 1400);
-                particle.setCenterY(900 + particle.getRadius());
-                floatAnimation.playFromStart();
-            });
-            
-            floatAnimation.play();
-        }
-        
-        // Add particle pane behind all content
-        container.getChildren().add(0, particlePane);
-        particlePane.toBack();
     }
     
     private void shutdown() {
