@@ -47,16 +47,163 @@ The **Smart Home Automation Simulator** is a comprehensive Java-based applicatio
 The application has 4 main tabs accessible via the navigation bar:
 
 ### 1. 🏠 Dashboard Tab
-**Purpose**: Real-time overview and quick actions
+**Purpose**: Real-time overview, room summaries, and quick actions
 
 **📁 Implementation File**: `src/main/java/com/smarthome/ui/javafx/ModernSmartHomeDashboard.java`
 
+**New Features**:
+
+#### 🎉 Welcome Message with Dynamic Jokes (Lines 566-616)
+**How It Works**:
+- Displays "🏠 Welcome to Your Smart Home! 🎉" with IoT-themed gradient border
+- **10 rotating tech/IoT jokes** that change automatically every 8 seconds
+- Uses JavaFX Timeline with fade transitions for smooth joke changes
+- Jokes array contains 10 humorous messages about smart homes
+
+**Implementation**:
+```java
+// Joke rotation with Timeline (Lines 598-610)
+Timeline jokeTimeline = new Timeline(new KeyFrame(Duration.seconds(8), e -> {
+    FadeTransition fadeOut = new FadeTransition(Duration.millis(500), jokeLabel);
+    fadeOut.setFromValue(1.0);
+    fadeOut.setToValue(0.0);
+    fadeOut.setOnFinished(ev -> {
+        jokeIndex[0] = (jokeIndex[0] + 1) % jokes.length;
+        jokeLabel.setText(jokes[jokeIndex[0]]);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), jokeLabel);
+        fadeIn.setFromValue(0.0);
+        fadeIn.setToValue(1.0);
+        fadeIn.play();
+    });
+    fadeOut.play();
+}));
+jokeTimeline.setCycleCount(Timeline.INDEFINITE);
+jokeTimeline.play();
+```
+
+#### 🏘️ Room Summary Cards (Lines 618-635)
+**Purpose**: Quick overview of each room with live statistics and direct access to management
+
+**Features**:
+- **Centered layout** with FlowPane alignment
+- **Entrance animations**: Staggered fade-in and slide-up effects (100ms delay between cards)
+- **Real-time dynamic updates**: Cards update instantly when devices are toggled
+- Each card displays:
+  - 📱 Device count (active/total) - **updates live**
+  - ⚡ Power usage in watts - **updates live**
+  - ✅/💤 Status (Active/Idle) - **updates live**
+  - 🔧 "Manage Devices" button - links directly to Rooms Management tab
+- **Hover animation**: Scales to 1.03x on mouse enter
+- **Bluish IoT borders**: Gradient from #3b82f6 to #8b5cf6
+
+**Implementation** (Lines 1926-2070):
+```java
+private VBox createRoomSummaryCard(Room room) {
+    VBox card = new VBox(15);
+    card.setUserData(room); // Store room reference
+    
+    // Update function for dynamic data
+    Runnable updateCard = () -> {
+        int totalDevices = room.getDevices().size();
+        int activeDevices = (int) room.getDevices().stream().filter(SmartDevice::isOn).count();
+        double totalPower = room.getDevices().stream()
+            .filter(SmartDevice::isOn)
+            .mapToDouble(SmartDevice::getCurrentPowerConsumption)
+            .sum();
+        boolean hasActiveDevices = activeDevices > 0;
+        
+        Platform.runLater(() -> {
+            deviceCount.setText(activeDevices + "/" + totalDevices);
+            powerValue.setText(String.format("%.0fW", totalPower));
+            statusIcon.setText(hasActiveDevices ? "✅" : "💤");
+            statusText.setText(hasActiveDevices ? "Active" : "Idle");
+            statusText.setStyle("-fx-text-fill: " + (hasActiveDevices ? "#10b981" : "#94a3b8") + ";");
+        });
+    };
+    
+    // Store update function in card properties
+    card.getProperties().put("updateCard", updateCard);
+    updateCard.run(); // Initial update
+    return card;
+}
+```
+
+**Dynamic Updates** (Lines 3062-3071):
+```java
+// In refreshAllData() - updates all room cards
+if (roomSummaryGrid != null) {
+    for (javafx.scene.Node node : roomSummaryGrid.getChildren()) {
+        if (node instanceof VBox) {
+            VBox card = (VBox) node;
+            Runnable updateCard = (Runnable) card.getProperties().get("updateCard");
+            if (updateCard != null) {
+                updateCard.run(); // Update card with latest data
+            }
+        }
+    }
+}
+```
+
+**Performance Optimizations**:
+- Card reference caching via `roomSummaryGrid` field
+- Property-based storage of update functions (no external maps)
+- `Platform.runLater()` for thread-safe UI updates
+- Efficient stream processing for device filtering
+
+#### 🎬 Scene Indicator (Header - Lines 299-304)
+**Purpose**: Shows current active scene in real-time
+
+**Features**:
+- Displays in header: "Normal Mode", "Morning Mode", "Movie Mode", "Night Mode"
+- **Automatically updates** when scenes are changed via scene buttons
+- Color-coded styling for each scene:
+  - **Normal**: Light background with blue border
+  - **Morning**: Yellow background with golden border and glow
+  - **Movie**: Dark purple with violet border and glow
+  - **Night**: Dark blue with cyan border and glow
+- Visual feedback with drop shadow effects
+
+**Implementation** (Lines 1233-1274):
+```java
+private void updateSceneTheme(String sceneName, String sceneName2, String color) {
+    switch (sceneName.toLowerCase()) {
+        case "normal":
+        case "away":
+            sceneIndicator.setText("Normal Mode");
+            sceneIndicator.setStyle("-fx-background-color: rgba(255, 255, 255, 0.95); -fx-text-fill: #1e3a8a; " +
+                                   "-fx-background-radius: 12; -fx-border-color: #60a5fa; " +
+                                   "-fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 15;");
+            break;
+        case "morning":
+            sceneIndicator.setText("Morning Mode");
+            sceneIndicator.setStyle("-fx-background-color: #fef3c7; -fx-text-fill: #92400e; " +
+                                   "-fx-background-radius: 12; -fx-border-color: #fbbf24; " +
+                                   "-fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 15; " +
+                                   "-fx-effect: dropshadow(gaussian, rgba(251, 191, 36, 0.4), 8, 0, 0, 0);");
+            break;
+        case "movie":
+            sceneIndicator.setText("Movie Mode");
+            sceneIndicator.setStyle("-fx-background-color: #4c1d95; -fx-text-fill: #fdf4ff; " +
+                                   "-fx-background-radius: 12; -fx-border-color: #a78bfa; " +
+                                   "-fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 15; " +
+                                   "-fx-effect: dropshadow(gaussian, rgba(124, 58, 237, 0.4), 8, 0, 0, 0);");
+            break;
+        case "night":
+            sceneIndicator.setText("Night Mode");
+            sceneIndicator.setStyle("-fx-background-color: #0f172a; -fx-text-fill: #67e8f9; " +
+                                   "-fx-background-radius: 12; -fx-border-color: #06b6d4; " +
+                                   "-fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 15; " +
+                                   "-fx-effect: dropshadow(gaussian, rgba(6, 182, 212, 0.4), 8, 0, 0, 0);");
+            break;
+    }
+}
+```
+
 **Components**:
-- **Live Statistics Cards**:
+- **Live Statistics Cards** (Header):
   - Total Power Consumption (Watts)
-  - Hourly Energy Cost ($)
   - Active/Total Devices count
-  - Security System status
+  - Hourly Energy Cost ($)
 
 **📍 Implementation Details**:
 

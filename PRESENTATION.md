@@ -587,26 +587,55 @@ public class Room {
 
 ### 8.1 Dashboard Features
 
-**Real-Time Statistics**:
+**Welcome Experience**:
+- Animated welcome message with IoT-themed gradient border
+- **Dynamic rotating jokes** - 10 tech/IoT jokes that change every 8 seconds with smooth fade transitions
+- Engaging user experience with humor and personality
+
+**Real-Time Scene Indicator** (Header):
+- Live scene status display (Normal, Morning, Movie, Night modes)
+- Color-coded for each scene with custom styling
+- Automatically updates when scenes are changed
+- Visual feedback with borders and glowing effects
+
+**Room Summary Cards** (Dashboard View):
+- Centered layout with entrance animations
+- **Real-time dynamic updates** - cards update instantly when devices are toggled
+- Each card shows:
+  - Device count (active/total) - updates live
+  - Power consumption in watts - updates live
+  - Room status (Active ✅ / Idle 💤) - updates live
+  - Quick "Manage Devices" button linking to Rooms tab
+- Staggered fade-in and slide-up animations on load
+- Hover scale effect (1.03x zoom)
+- Bluish IoT gradient borders
+
+**Real-Time Statistics** (Header):
 - Total power consumption (live updates every 5s)
-- Hourly energy cost calculation
-- Active/total device counts
+- Active/total device counts (dynamic)
+- Hourly energy cost calculation (dynamic)
 - Security system status indicator
 
-**Quick Actions** (6 buttons):
-1. All Lights ON/OFF
-2. All Devices ON/OFF
-3. Arm/Disarm Security
-
 **Scene Buttons** (4 scenarios):
-1. Morning: Energetic start
-2. Movie: Entertainment mode
-3. Night: Sleep mode with security
-4. Away: Energy-saving + full security
+1. 🌅 Morning: Energetic start (green gradient)
+2. 🎬 Movie: Entertainment mode (blue gradient)
+3. 🌙 Night: Sleep mode with security (purple gradient)
+4. 🚗 Away: Energy-saving + full security (orange gradient)
+
+**Quick Controls** (3 toggle buttons):
+1. 💡 All Lights (green → red toggle)
+2. 🔌 All Devices (green → red toggle)
+3. 🔐 Security System (orange/green toggle)
 
 **Analytics Charts**:
 1. Power consumption timeline (line chart)
 2. Energy by room (pie chart)
+
+**Performance Optimizations**:
+- Card reference caching for efficient updates
+- Property-based update functions
+- Platform.runLater() for thread-safe UI updates
+- Efficient stream processing for device stats
 
 ### 8.2 Device Management
 

@@ -751,6 +751,11 @@ public class ModernSmartHomeDashboard extends Application {
         
         btn.setOnAction(e -> {
             sceneManager.apply(sceneName);
+            
+            // Update scene indicator in header
+            String displayText = text.replaceAll("[^a-zA-Z\\s]", "").trim();
+            updateSceneTheme(sceneName, text, color);
+            
             refreshAllData();
             showEnhancedAlert("Scene Applied", "Scene '" + text + "' has been activated!", Alert.AlertType.INFORMATION);
         });
@@ -1236,6 +1241,19 @@ public class ModernSmartHomeDashboard extends Application {
         
         // Apply scene-specific styling with proper contrast
         switch (sceneName.toLowerCase()) {
+            case "normal":
+                sceneIndicator.setText("Normal Mode");
+                sceneIndicator.setStyle("-fx-background-color: rgba(255, 255, 255, 0.95); -fx-text-fill: #1e3a8a; " +
+                                       "-fx-background-radius: 12; -fx-border-color: #60a5fa; " +
+                                       "-fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 15;");
+                break;
+            case "morning":
+                sceneIndicator.setText("Morning Mode");
+                sceneIndicator.setStyle("-fx-background-color: #fef3c7; -fx-text-fill: #92400e; " +
+                                       "-fx-background-radius: 12; -fx-border-color: #fbbf24; " +
+                                       "-fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 15; " +
+                                       "-fx-effect: dropshadow(gaussian, rgba(251, 191, 36, 0.4), 8, 0, 0, 0);");
+                break;
             case "movie":
                 sceneIndicator.setText("Movie Mode");
                 sceneIndicator.setStyle("-fx-background-color: #4c1d95; -fx-text-fill: #fdf4ff; " +
