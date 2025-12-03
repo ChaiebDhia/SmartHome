@@ -1249,31 +1249,31 @@ public class ModernSmartHomeDashboard extends Application {
                 break;
             case "morning":
                 sceneIndicator.setText("Morning Mode");
-                sceneIndicator.setStyle("-fx-background-color: #fef3c7; -fx-text-fill: #92400e; " +
-                                       "-fx-background-radius: 12; -fx-border-color: #fbbf24; " +
+                sceneIndicator.setStyle("-fx-background-color: #d1fae5; -fx-text-fill: #065f46; " +
+                                       "-fx-background-radius: 12; -fx-border-color: #10b981; " +
                                        "-fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 15; " +
-                                       "-fx-effect: dropshadow(gaussian, rgba(251, 191, 36, 0.4), 8, 0, 0, 0);");
+                                       "-fx-effect: dropshadow(gaussian, rgba(16, 185, 129, 0.4), 8, 0, 0, 0);");
                 break;
             case "movie":
                 sceneIndicator.setText("Movie Mode");
-                sceneIndicator.setStyle("-fx-background-color: #4c1d95; -fx-text-fill: #fdf4ff; " +
-                                       "-fx-background-radius: 12; -fx-border-color: #a78bfa; " +
+                sceneIndicator.setStyle("-fx-background-color: #dbeafe; -fx-text-fill: #1e3a8a; " +
+                                       "-fx-background-radius: 12; -fx-border-color: #3b82f6; " +
                                        "-fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 15; " +
-                                       "-fx-effect: dropshadow(gaussian, rgba(124, 58, 237, 0.4), 8, 0, 0, 0);");
+                                       "-fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.4), 8, 0, 0, 0);");
                 if (quickActionsPanel != null) {
                     quickActionsPanel.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 12; " +
-                                              "-fx-border-color: #a78bfa; -fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 20;");
+                                              "-fx-border-color: #3b82f6; -fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 20;");
                 }
                 break;
             case "night":
                 sceneIndicator.setText("Night Mode");
-                sceneIndicator.setStyle("-fx-background-color: #0f172a; -fx-text-fill: #67e8f9; " +
-                                       "-fx-background-radius: 12; -fx-border-color: #06b6d4; " +
+                sceneIndicator.setStyle("-fx-background-color: #ede9fe; -fx-text-fill: #5b21b6; " +
+                                       "-fx-background-radius: 12; -fx-border-color: #8b5cf6; " +
                                        "-fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 15; " +
-                                       "-fx-effect: dropshadow(gaussian, rgba(6, 182, 212, 0.4), 8, 0, 0, 0);");
+                                       "-fx-effect: dropshadow(gaussian, rgba(139, 92, 246, 0.4), 8, 0, 0, 0);");
                 if (quickActionsPanel != null) {
                     quickActionsPanel.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 12; " +
-                                              "-fx-border-color: #22d3ee; -fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 20;");
+                                              "-fx-border-color: #8b5cf6; -fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 20;");
                 }
                 break;
             case "party":
@@ -1290,13 +1290,13 @@ public class ModernSmartHomeDashboard extends Application {
             case "energy saving":
             case "away":
                 sceneIndicator.setText(displayName);
-                sceneIndicator.setStyle("-fx-background-color: #047857; -fx-text-fill: #d1fae5; " +
-                                       "-fx-background-radius: 12; -fx-border-color: #6ee7b7; " +
+                sceneIndicator.setStyle("-fx-background-color: #fed7aa; -fx-text-fill: #9a3412; " +
+                                       "-fx-background-radius: 12; -fx-border-color: #f97316; " +
                                        "-fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 15; " +
-                                       "-fx-effect: dropshadow(gaussian, rgba(16, 185, 129, 0.4), 8, 0, 0, 0);");
+                                       "-fx-effect: dropshadow(gaussian, rgba(249, 115, 22, 0.4), 8, 0, 0, 0);");
                 if (quickActionsPanel != null) {
                     quickActionsPanel.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 12; " +
-                                              "-fx-border-color: #6ee7b7; -fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 20;");
+                                              "-fx-border-color: #f97316; -fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 20;");
                 }
                 break;
             default:
