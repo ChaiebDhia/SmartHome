@@ -93,6 +93,7 @@ public class ModernSmartHomeDashboard extends Application {
     private VBox devicesTab;
     private VBox roomsTab;
     private VBox automationTab;
+    private FlowPane roomSummaryGrid;
     
     // Search/Filter State (to preserve during refreshes)
     private String currentSearchText = "";
@@ -623,16 +624,37 @@ public class ModernSmartHomeDashboard extends Application {
         roomsTitle.setStyle("-fx-text-fill: #1e293b; -fx-padding: 10 0 0 0;");
         content.getChildren().add(roomsTitle);
         
-        // Rooms Summary Grid
-        FlowPane roomsGrid = new FlowPane();
-        roomsGrid.setHgap(15);
-        roomsGrid.setVgap(15);
+        // Rooms Summary Grid - Centered
+        roomSummaryGrid = new FlowPane();
+        roomSummaryGrid.setHgap(15);
+        roomSummaryGrid.setVgap(15);
+        roomSummaryGrid.setAlignment(Pos.CENTER);
         
+        int cardIndex = 0;
         for (Room room : home.getRooms()) {
-            roomsGrid.getChildren().add(createRoomSummaryCard(room));
+            VBox card = createRoomSummaryCard(room);
+            // Add entrance animation
+            card.setOpacity(0);
+            card.setTranslateY(20);
+            
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(400), card);
+            fadeIn.setFromValue(0);
+            fadeIn.setToValue(1);
+            fadeIn.setDelay(Duration.millis(cardIndex * 100));
+            
+            TranslateTransition slideUp = new TranslateTransition(Duration.millis(400), card);
+            slideUp.setFromY(20);
+            slideUp.setToY(0);
+            slideUp.setDelay(Duration.millis(cardIndex * 100));
+            
+            fadeIn.play();
+            slideUp.play();
+            
+            roomSummaryGrid.getChildren().add(card);
+            cardIndex++;
         }
         
-        content.getChildren().add(roomsGrid);
+        content.getChildren().add(roomSummaryGrid);
         
         // Row 2: Control Panel (Scenes + Quick Controls)
         HBox controlRow = new HBox(20);
@@ -1935,6 +1957,9 @@ public class ModernSmartHomeDashboard extends Application {
             "-fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.3), 15, 0, 0, 5);"
         );
         
+        // Store room reference for updates
+        card.setUserData(room);
+        
         // Add hover animation
         ScaleTransition scaleUp = new ScaleTransition(Duration.millis(200), card);
         scaleUp.setToX(1.03);
@@ -1966,46 +1991,62 @@ public class ModernSmartHomeDashboard extends Application {
         statsGrid.setVgap(10);
         statsGrid.setPadding(new Insets(10, 0, 10, 0));
         
-        int totalDevices = room.getDevices().size();
-        int activeDevices = (int) room.getDevices().stream().filter(SmartDevice::isOn).count();
-        double totalPower = room.getDevices().stream()
-            .filter(SmartDevice::isOn)
-            .mapToDouble(SmartDevice::getCurrentPowerConsumption)
-            .sum();
-        
-        // Device Count
+        // Device Count - DYNAMIC
         VBox deviceBox = new VBox(3);
         Label deviceIcon = new Label("📱");
         deviceIcon.setFont(Font.font(20));
-        Label deviceCount = new Label(activeDevices + "/" + totalDevices);
+        Label deviceCount = new Label();
         deviceCount.setFont(Font.font("System", FontWeight.BOLD, 16));
         deviceCount.setStyle("-fx-text-fill: #1e293b;");
         Label deviceLabel = new Label("Devices");
         deviceLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11px;");
         deviceBox.getChildren().addAll(deviceIcon, deviceCount, deviceLabel);
         
-        // Power Usage
+        // Power Usage - DYNAMIC
         VBox powerBox = new VBox(3);
         Label powerIcon = new Label("⚡");
         powerIcon.setFont(Font.font(20));
-        Label powerValue = new Label(String.format("%.0fW", totalPower));
+        Label powerValue = new Label();
         powerValue.setFont(Font.font("System", FontWeight.BOLD, 16));
         powerValue.setStyle("-fx-text-fill: #1e293b;");
         Label powerLabel = new Label("Power");
         powerLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11px;");
         powerBox.getChildren().addAll(powerIcon, powerValue, powerLabel);
         
-        // Status Indicator
+        // Status Indicator - DYNAMIC
         VBox statusBox = new VBox(3);
-        boolean hasActiveDevices = activeDevices > 0;
-        Label statusIcon = new Label(hasActiveDevices ? "✅" : "💤");
+        Label statusIcon = new Label();
         statusIcon.setFont(Font.font(20));
-        Label statusText = new Label(hasActiveDevices ? "Active" : "Idle");
+        Label statusText = new Label();
         statusText.setFont(Font.font("System", FontWeight.BOLD, 16));
-        statusText.setStyle("-fx-text-fill: " + (hasActiveDevices ? "#10b981" : "#94a3b8") + ";");
         Label statusLabel = new Label("Status");
         statusLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11px;");
         statusBox.getChildren().addAll(statusIcon, statusText, statusLabel);
+        
+        // Update function for this card
+        Runnable updateCard = () -> {
+            int totalDevices = room.getDevices().size();
+            int activeDevices = (int) room.getDevices().stream().filter(SmartDevice::isOn).count();
+            double totalPower = room.getDevices().stream()
+                .filter(SmartDevice::isOn)
+                .mapToDouble(SmartDevice::getCurrentPowerConsumption)
+                .sum();
+            boolean hasActiveDevices = activeDevices > 0;
+            
+            Platform.runLater(() -> {
+                deviceCount.setText(activeDevices + "/" + totalDevices);
+                powerValue.setText(String.format("%.0fW", totalPower));
+                statusIcon.setText(hasActiveDevices ? "✅" : "💤");
+                statusText.setText(hasActiveDevices ? "Active" : "Idle");
+                statusText.setStyle("-fx-text-fill: " + (hasActiveDevices ? "#10b981" : "#94a3b8") + ";");
+            });
+        };
+        
+        // Store update function in card properties
+        card.getProperties().put("updateCard", updateCard);
+        
+        // Initial update
+        updateCard.run();
         
         statsGrid.add(deviceBox, 0, 0);
         statsGrid.add(powerBox, 1, 0);
@@ -3056,6 +3097,19 @@ public class ModernSmartHomeDashboard extends Application {
         roomData.clear();
         for (Room room : home.getRooms()) {
             roomData.add(new RoomData(room));
+        }
+        
+        // Update room summary cards dynamically
+        if (roomSummaryGrid != null) {
+            for (javafx.scene.Node node : roomSummaryGrid.getChildren()) {
+                if (node instanceof VBox) {
+                    VBox card = (VBox) node;
+                    Runnable updateCard = (Runnable) card.getProperties().get("updateCard");
+                    if (updateCard != null) {
+                        updateCard.run();
+                    }
+                }
+            }
         }
         
         // Update charts with real-time data
