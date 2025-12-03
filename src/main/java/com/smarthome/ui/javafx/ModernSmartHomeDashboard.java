@@ -562,7 +562,7 @@ public class ModernSmartHomeDashboard extends Application {
         content.setPadding(new Insets(30));
         content.setStyle("-fx-background-color: #f8fafc;");
         
-        // Fun Welcome Message
+        // Fun Welcome Message with Dynamic Jokes
         VBox welcomeBox = new VBox(8);
         welcomeBox.setPadding(new Insets(20));
         welcomeBox.setStyle(
@@ -582,41 +582,54 @@ public class ModernSmartHomeDashboard extends Application {
             "🤖 Did you know? Your home is so smart, it probably knows what you want for dinner before you do!",
             "⚡ Pro Tip: The only thing smarter than your home is... well, we're still working on that!",
             "🎭 Remember: With great power consumption comes great electricity bills!",
-            "🌟 Your home automation is so advanced, even the toaster is judging your breakfast choices!"
+            "🌟 Your home automation is so advanced, even the toaster is judging your breakfast choices!",
+            "🚀 Breaking: Scientists confirm your smart home has better WiFi than most offices!",
+            "🎯 Your automation rules are so good, they should run for political office!",
+            "🔥 Hot take: Your thermostat knows your comfort zone better than you do!",
+            "🎪 Welcome to the future, where even your doorbell has trust issues!",
+            "🌈 Life hack: Turn everything off and on again... remotely!"
         };
-        String randomJoke = jokes[(int)(Math.random() * jokes.length)];
         
-        Label jokeLabel = new Label(randomJoke);
+        Label jokeLabel = new Label(jokes[0]);
         jokeLabel.setFont(Font.font("System", 14));
         jokeLabel.setStyle("-fx-text-fill: #64748b;");
         jokeLabel.setWrapText(true);
         
+        // Rotate jokes every 8 seconds with fade animation
+        final int[] jokeIndex = {0};
+        Timeline jokeTimeline = new Timeline(new KeyFrame(Duration.seconds(8), e -> {
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(500), jokeLabel);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+            fadeOut.setOnFinished(ev -> {
+                jokeIndex[0] = (jokeIndex[0] + 1) % jokes.length;
+                jokeLabel.setText(jokes[jokeIndex[0]]);
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(500), jokeLabel);
+                fadeIn.setFromValue(0.0);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+            });
+            fadeOut.play();
+        }));
+        jokeTimeline.setCycleCount(Timeline.INDEFINITE);
+        jokeTimeline.play();
+        
         welcomeBox.getChildren().addAll(welcomeTitle, jokeLabel);
         content.getChildren().add(welcomeBox);
         
-        // Quick Stats Row (4 compact cards)
-        HBox statsRow = new HBox(20);
-        statsRow.getChildren().addAll(
-            createStatCard("Total Power", totalPower.asString("%.0f W"), "⚡", "#3b82f6"),
-            createStatCard("Hourly Cost", hourlyCost.asString("$%.2f"), "💰", "#10b981"),
-            createStatCard("Active Devices", activeDevices.asString().concat("/").concat(totalDevices.asString()), "🔌", "#f59e0b"),
-            createSecurityCard()
-        );
-        content.getChildren().add(statsRow);
-        
-        // Rooms Overview Section
-        Label roomsTitle = new Label("🚪 Rooms Overview");
+        // Rooms Summary Cards Section
+        Label roomsTitle = new Label("🏘️ Rooms Summary");
         roomsTitle.setFont(Font.font("System", FontWeight.BOLD, 22));
         roomsTitle.setStyle("-fx-text-fill: #1e293b; -fx-padding: 10 0 0 0;");
         content.getChildren().add(roomsTitle);
         
-        // Rooms Grid
+        // Rooms Summary Grid
         FlowPane roomsGrid = new FlowPane();
         roomsGrid.setHgap(15);
         roomsGrid.setVgap(15);
         
         for (Room room : home.getRooms()) {
-            roomsGrid.getChildren().add(createDetailedRoomCard(room));
+            roomsGrid.getChildren().add(createRoomSummaryCard(room));
         }
         
         content.getChildren().add(roomsGrid);
@@ -1908,6 +1921,150 @@ public class ModernSmartHomeDashboard extends Application {
         content.getChildren().addAll(title, roomsGrid);
         
         return content;
+    }
+    
+    private VBox createRoomSummaryCard(Room room) {
+        VBox card = new VBox(15);
+        card.setPrefWidth(320);
+        card.setPadding(new Insets(20));
+        card.setStyle(
+            "-fx-background-color: linear-gradient(to bottom right, #ffffff, #f0f9ff); " +
+            "-fx-background-radius: 15; " +
+            "-fx-border-color: linear-gradient(to right, #3b82f6, #8b5cf6); " +
+            "-fx-border-radius: 15; -fx-border-width: 2; " +
+            "-fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.3), 15, 0, 0, 5);"
+        );
+        
+        // Add hover animation
+        ScaleTransition scaleUp = new ScaleTransition(Duration.millis(200), card);
+        scaleUp.setToX(1.03);
+        scaleUp.setToY(1.03);
+        
+        ScaleTransition scaleDown = new ScaleTransition(Duration.millis(200), card);
+        scaleDown.setToX(1.0);
+        scaleDown.setToY(1.0);
+        
+        card.setOnMouseEntered(e -> scaleUp.playFromStart());
+        card.setOnMouseExited(e -> scaleDown.playFromStart());
+        
+        // Room Header
+        HBox header = new HBox(10);
+        header.setAlignment(Pos.CENTER_LEFT);
+        
+        Label roomIcon = new Label(getRoomIcon(room.getName()));
+        roomIcon.setFont(Font.font(28));
+        
+        Label roomName = new Label(room.getName());
+        roomName.setFont(Font.font("System", FontWeight.BOLD, 18));
+        roomName.setStyle("-fx-text-fill: #3b82f6;");
+        
+        header.getChildren().addAll(roomIcon, roomName);
+        
+        // Quick Stats
+        GridPane statsGrid = new GridPane();
+        statsGrid.setHgap(15);
+        statsGrid.setVgap(10);
+        statsGrid.setPadding(new Insets(10, 0, 10, 0));
+        
+        int totalDevices = room.getDevices().size();
+        int activeDevices = (int) room.getDevices().stream().filter(SmartDevice::isOn).count();
+        double totalPower = room.getDevices().stream()
+            .filter(SmartDevice::isOn)
+            .mapToDouble(SmartDevice::getCurrentPowerConsumption)
+            .sum();
+        
+        // Device Count
+        VBox deviceBox = new VBox(3);
+        Label deviceIcon = new Label("📱");
+        deviceIcon.setFont(Font.font(20));
+        Label deviceCount = new Label(activeDevices + "/" + totalDevices);
+        deviceCount.setFont(Font.font("System", FontWeight.BOLD, 16));
+        deviceCount.setStyle("-fx-text-fill: #1e293b;");
+        Label deviceLabel = new Label("Devices");
+        deviceLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11px;");
+        deviceBox.getChildren().addAll(deviceIcon, deviceCount, deviceLabel);
+        
+        // Power Usage
+        VBox powerBox = new VBox(3);
+        Label powerIcon = new Label("⚡");
+        powerIcon.setFont(Font.font(20));
+        Label powerValue = new Label(String.format("%.0fW", totalPower));
+        powerValue.setFont(Font.font("System", FontWeight.BOLD, 16));
+        powerValue.setStyle("-fx-text-fill: #1e293b;");
+        Label powerLabel = new Label("Power");
+        powerLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11px;");
+        powerBox.getChildren().addAll(powerIcon, powerValue, powerLabel);
+        
+        // Status Indicator
+        VBox statusBox = new VBox(3);
+        boolean hasActiveDevices = activeDevices > 0;
+        Label statusIcon = new Label(hasActiveDevices ? "✅" : "💤");
+        statusIcon.setFont(Font.font(20));
+        Label statusText = new Label(hasActiveDevices ? "Active" : "Idle");
+        statusText.setFont(Font.font("System", FontWeight.BOLD, 16));
+        statusText.setStyle("-fx-text-fill: " + (hasActiveDevices ? "#10b981" : "#94a3b8") + ";");
+        Label statusLabel = new Label("Status");
+        statusLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11px;");
+        statusBox.getChildren().addAll(statusIcon, statusText, statusLabel);
+        
+        statsGrid.add(deviceBox, 0, 0);
+        statsGrid.add(powerBox, 1, 0);
+        statsGrid.add(statusBox, 2, 0);
+        
+        // Separator
+        Separator separator = new Separator();
+        separator.setStyle("-fx-background-color: #e2e8f0;");
+        
+        // Quick Actions
+        HBox actionsBox = new HBox(10);
+        actionsBox.setAlignment(Pos.CENTER);
+        
+        Button manageBtn = new Button("🔧 Manage Devices");
+        manageBtn.setStyle(
+            "-fx-background-color: linear-gradient(to right, #3b82f6, #2563eb); " +
+            "-fx-text-fill: white; " +
+            "-fx-font-size: 12px; " +
+            "-fx-font-weight: bold; " +
+            "-fx-background-radius: 8; " +
+            "-fx-cursor: hand; " +
+            "-fx-padding: 8 16;"
+        );
+        
+        manageBtn.setOnMouseEntered(e -> {
+            manageBtn.setStyle(
+                "-fx-background-color: linear-gradient(to right, #2563eb, #1d4ed8); " +
+                "-fx-text-fill: white; " +
+                "-fx-font-size: 12px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-background-radius: 8; " +
+                "-fx-cursor: hand; " +
+                "-fx-padding: 8 16;"
+            );
+        });
+        
+        manageBtn.setOnMouseExited(e -> {
+            manageBtn.setStyle(
+                "-fx-background-color: linear-gradient(to right, #3b82f6, #2563eb); " +
+                "-fx-text-fill: white; " +
+                "-fx-font-size: 12px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-background-radius: 8; " +
+                "-fx-cursor: hand; " +
+                "-fx-padding: 8 16;"
+            );
+        });
+        
+        manageBtn.setOnAction(e -> {
+            // Switch to Rooms tab (index 2)
+            TabPane tabPane = (TabPane) ((VBox) mainTabsContainer).getChildren().get(1);
+            tabPane.getSelectionModel().select(2);
+        });
+        
+        actionsBox.getChildren().add(manageBtn);
+        
+        card.getChildren().addAll(header, statsGrid, separator, actionsBox);
+        
+        return card;
     }
     
     private VBox createDetailedRoomCard(Room room) {
