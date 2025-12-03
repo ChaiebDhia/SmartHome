@@ -562,13 +562,39 @@ public class ModernSmartHomeDashboard extends Application {
         content.setPadding(new Insets(30));
         content.setStyle("-fx-background-color: #f8fafc;");
         
-        // Dashboard Title
-        Label dashTitle = new Label("Dashboard Overview");
-        dashTitle.setFont(Font.font("System", FontWeight.BOLD, 24));
-        dashTitle.setStyle("-fx-text-fill: #1e293b;");
-        content.getChildren().add(dashTitle);
+        // Fun Welcome Message
+        VBox welcomeBox = new VBox(8);
+        welcomeBox.setPadding(new Insets(20));
+        welcomeBox.setStyle(
+            "-fx-background-color: linear-gradient(to bottom right, #ffffff, #f0f9ff); " +
+            "-fx-background-radius: 15; " +
+            "-fx-border-color: linear-gradient(to right, #3b82f6, #8b5cf6); " +
+            "-fx-border-radius: 15; -fx-border-width: 2; " +
+            "-fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.3), 15, 0, 0, 5);"
+        );
         
-        // Row 1: Statistics Cards (4 cards in a row)
+        Label welcomeTitle = new Label("🏠 Welcome to Your Smart Home! 🎉");
+        welcomeTitle.setFont(Font.font("System", FontWeight.BOLD, 24));
+        welcomeTitle.setStyle("-fx-text-fill: #3b82f6;");
+        
+        String[] jokes = {
+            "💡 Fun Fact: Your smart lights use 75% less energy than saying 'Let there be light!'",
+            "🤖 Did you know? Your home is so smart, it probably knows what you want for dinner before you do!",
+            "⚡ Pro Tip: The only thing smarter than your home is... well, we're still working on that!",
+            "🎭 Remember: With great power consumption comes great electricity bills!",
+            "🌟 Your home automation is so advanced, even the toaster is judging your breakfast choices!"
+        };
+        String randomJoke = jokes[(int)(Math.random() * jokes.length)];
+        
+        Label jokeLabel = new Label(randomJoke);
+        jokeLabel.setFont(Font.font("System", 14));
+        jokeLabel.setStyle("-fx-text-fill: #64748b;");
+        jokeLabel.setWrapText(true);
+        
+        welcomeBox.getChildren().addAll(welcomeTitle, jokeLabel);
+        content.getChildren().add(welcomeBox);
+        
+        // Quick Stats Row (4 compact cards)
         HBox statsRow = new HBox(20);
         statsRow.getChildren().addAll(
             createStatCard("Total Power", totalPower.asString("%.0f W"), "⚡", "#3b82f6"),
@@ -577,6 +603,23 @@ public class ModernSmartHomeDashboard extends Application {
             createSecurityCard()
         );
         content.getChildren().add(statsRow);
+        
+        // Rooms Overview Section
+        Label roomsTitle = new Label("🚪 Rooms Overview");
+        roomsTitle.setFont(Font.font("System", FontWeight.BOLD, 22));
+        roomsTitle.setStyle("-fx-text-fill: #1e293b; -fx-padding: 10 0 0 0;");
+        content.getChildren().add(roomsTitle);
+        
+        // Rooms Grid
+        FlowPane roomsGrid = new FlowPane();
+        roomsGrid.setHgap(15);
+        roomsGrid.setVgap(15);
+        
+        for (Room room : home.getRooms()) {
+            roomsGrid.getChildren().add(createDetailedRoomCard(room));
+        }
+        
+        content.getChildren().add(roomsGrid);
         
         // Row 2: Control Panel (Scenes + Quick Controls)
         HBox controlRow = new HBox(20);
@@ -606,12 +649,12 @@ public class ModernSmartHomeDashboard extends Application {
         panel.setPrefWidth(450);
         HBox.setHgrow(panel, Priority.SOMETIMES);
         panel.setStyle(
-            "-fx-background-color: white; " +
+            "-fx-background-color: linear-gradient(to bottom right, #ffffff, #f0f9ff); " +
             "-fx-background-radius: 12; " +
-            "-fx-border-color: #e2e8f0; " +
-            "-fx-border-width: 1; " +
+            "-fx-border-color: linear-gradient(to right, #3b82f6, #8b5cf6); " +
+            "-fx-border-width: 2; " +
             "-fx-border-radius: 12; " +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);"
+            "-fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.3), 12, 0, 0, 3);"
         );
         
         Label title = new Label("Scene Control");
@@ -685,12 +728,12 @@ public class ModernSmartHomeDashboard extends Application {
         panel.setPadding(new Insets(25));
         HBox.setHgrow(panel, Priority.ALWAYS);
         panel.setStyle(
-            "-fx-background-color: white; " +
+            "-fx-background-color: linear-gradient(to bottom right, #ffffff, #f0f9ff); " +
             "-fx-background-radius: 12; " +
-            "-fx-border-color: #e2e8f0; " +
-            "-fx-border-width: 1; " +
+            "-fx-border-color: linear-gradient(to right, #3b82f6, #8b5cf6); " +
+            "-fx-border-width: 2; " +
             "-fx-border-radius: 12; " +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);"
+            "-fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.3), 12, 0, 0, 3);"
         );
         
         Label title = new Label("Quick Controls");
@@ -883,7 +926,89 @@ public class ModernSmartHomeDashboard extends Application {
         return row;
     }
     
-    private VBox createQuickActionsPanel() {
+    private VBox createStatCard(String title, javafx.beans.binding.StringExpression valueBinding, String icon, String accentColor) {
+        VBox card = new VBox(15);
+        card.setPadding(new Insets(25));
+        card.setPrefHeight(120);
+        card.setMaxHeight(120);
+        HBox.setHgrow(card, Priority.ALWAYS);
+        card.setStyle(
+            "-fx-background-color: linear-gradient(to bottom right, #ffffff, #f0f9ff); " +
+            "-fx-background-radius: 12; " +
+            "-fx-border-color: linear-gradient(to right, #3b82f6, #8b5cf6); " +
+            "-fx-border-width: 2; " +
+            "-fx-border-radius: 12; " +
+            "-fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.3), 12, 0, 0, 3);"
+        );
+        
+        HBox header = new HBox(10);
+        header.setAlignment(Pos.CENTER_LEFT);
+        
+        Label iconLabel = new Label(icon);
+        iconLabel.setFont(Font.font(24));
+        iconLabel.setStyle("-fx-text-fill: " + accentColor + ";");
+        
+        Label titleLabel = new Label(title);
+        titleLabel.setFont(Font.font("System", FontWeight.NORMAL, 13));
+        titleLabel.setStyle("-fx-text-fill: #64748b;");
+        
+        header.getChildren().addAll(iconLabel, titleLabel);
+        
+        Label valueLabel = new Label();
+        valueLabel.textProperty().bind(valueBinding);
+        valueLabel.setFont(Font.font("System", FontWeight.BOLD, 28));
+        valueLabel.setStyle("-fx-text-fill: #1e293b;");
+        
+        card.getChildren().addAll(header, valueLabel);
+        return card;
+    }
+    
+    private VBox createSecurityCard() {
+        VBox card = new VBox(15);
+        card.setPadding(new Insets(25));
+        card.setPrefHeight(120);
+        card.setMaxHeight(120);
+        HBox.setHgrow(card, Priority.ALWAYS);
+        card.setStyle(
+            "-fx-background-color: linear-gradient(to bottom right, #ffffff, #f0f9ff); " +
+            "-fx-background-radius: 12; " +
+            "-fx-border-color: linear-gradient(to right, #3b82f6, #8b5cf6); " +
+            "-fx-border-width: 2; " +
+            "-fx-border-radius: 12; " +
+            "-fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.3), 12, 0, 0, 3);"
+        );
+        
+        HBox header = new HBox(10);
+        header.setAlignment(Pos.CENTER_LEFT);
+        
+        Label iconLabel = new Label("🛡️");
+        iconLabel.setFont(Font.font(24));
+        
+        Label titleLabel = new Label("Security");
+        titleLabel.setFont(Font.font("System", FontWeight.NORMAL, 13));
+        titleLabel.setStyle("-fx-text-fill: #64748b;");
+        
+        header.getChildren().addAll(iconLabel, titleLabel);
+        
+        Label valueLabel = new Label();
+        securityArmed.addListener((obs, old, newVal) -> {
+            if (newVal) {
+                valueLabel.setText("ARMED");
+                valueLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold; -fx-font-size: 28px;");
+            } else {
+                valueLabel.setText("DISARMED");
+                valueLabel.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 28px;");
+            }
+        });
+        valueLabel.setText("DISARMED");
+        valueLabel.setFont(Font.font("System", FontWeight.BOLD, 28));
+        valueLabel.setStyle("-fx-text-fill: #10b981;");
+        
+        card.getChildren().addAll(header, valueLabel);
+        return card;
+    }
+    
+    private VBox createQuickActionsPanel_OLD() {
         VBox panel = new VBox(15);
         panel.setPadding(new Insets(20));
         panel.setStyle("-fx-background-color: linear-gradient(to bottom right, #ffffff, #f0f9ff); " +
