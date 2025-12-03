@@ -1679,7 +1679,7 @@ public class ModernSmartHomeDashboard extends Application {
         searchIcon.setFont(Font.font(18));
         
         TextField searchField = new TextField();
-        searchField.setPromptText("Search by name, type, or ID...");
+        searchField.setPromptText("Search by device name or type...");
         searchField.setPrefWidth(400);
         searchField.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; " +
                             "-fx-font-size: 13px;");
@@ -1734,10 +1734,11 @@ public class ModernSmartHomeDashboard extends Application {
         ObservableList<DeviceData> filtered = FXCollections.observableArrayList();
         
         for (SmartDevice device : home.getAllDevices()) {
+            // Search only by name, type, and room - more secure without exposing IDs
             boolean matchesSearch = searchText == null || searchText.isEmpty() || 
                                    device.getName().toLowerCase().contains(searchText.toLowerCase()) ||
                                    device.getType().toLowerCase().contains(searchText.toLowerCase()) ||
-                                   device.getId().toLowerCase().contains(searchText.toLowerCase());
+                                   device.getLocation().toLowerCase().contains(searchText.toLowerCase());
             
             boolean matchesType = typeFilter.equals("All Types") || 
                                  device.getType().equalsIgnoreCase(typeFilter);
